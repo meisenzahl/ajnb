@@ -36,6 +36,12 @@ $(TARGET): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
 	$(CXX) -o $(BIN_DIR)/$(TARGET) $^ `pkg-config --cflags --libs libnotify` $(LIBS)
 
+install:
+	cp bin/ajnb /usr/local/bin
+
+uninstall:
+	rm /usr/local/bin/$(TARGET)
+
 clean:
 	@$(RM) -rf $(BIN_DIR)
 
