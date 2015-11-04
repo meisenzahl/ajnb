@@ -26,6 +26,9 @@
 #include <signal.h>
 #include <stdio.h>
 
+#include <sys/stat.h>
+#include <curl/curl.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <libnotify/notify.h>
 
 using namespace ajn;
@@ -40,6 +43,11 @@ static void CDECL_CALL SigIntHandler(int sig) {
 
 BusAttachment* bus = NULL;
 
+size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+    size_t written = fwrite(ptr, size, nmemb, stream);
+    return written;
+}
+
 class MySessionListener : public SessionListener {
     void SessionLost(SessionId sessionId, SessionLostReason reason) {
         printf("SessionLost sessionId = %u, Reason = %d\n", sessionId, reason);
@@ -53,11 +61,35 @@ class MyNotificationReceiver : public NotificationReceiver {
         qcc::String iconURL = qcc::String(notification.getRichIconUrl());
         size_t index = iconURL.find_last_of("/") + 1;
         qcc::String iconName = iconURL.substr(index);
+        qcc::String filename = "/tmp/" + iconName;
 
-        printf("%s: %s %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str(), iconName.c_str());
+        printf("%s: %s %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str());
+
+        struct stat buffer;
+        if (!stat(filename.c_str(), &buffer) == 0) {
+            CURL *curl;
+            FILE *fp;
+            curl = curl_easy_init();
+            if (curl) {
+                fp = fopen(filename.c_str(), "wb");
+                curl_easy_setopt(curl, CURLOPT_URL, iconURL.c_str());
+                curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+                curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+                curl_easy_perform(curl);
+
+                curl_easy_cleanup(curl);
+                fclose(fp);
+            }
+        }
 
         notify_init("AllJoyn Notification Bridge");
         NotifyNotification* n = notify_notification_new(deviceName.c_str(), content.c_str(), NULL);
+
+        GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(filename.c_str(), NULL);
+        if (pixbuf) {
+            notify_notification_set_image_from_pixbuf(n, pixbuf);
+        }
+
         notify_notification_show(n, NULL);
         g_object_unref(G_OBJECT(n));
         notify_uninit();

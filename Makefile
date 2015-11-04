@@ -22,7 +22,8 @@ INC = -I$(INC_DIR) \
 LIBS = -lstdc++ -lcrypto -lpthread -lrt \
 		-L$(ALLJOYN_DIST)/cpp/lib -lalljoyn \
 		-L$(ALLJOYN_DIST)/notification/lib -lalljoyn_notification \
-		-L$(ALLJOYN_DIST)/services_common/lib -lalljoyn_services_common
+		-L$(ALLJOYN_DIST)/services_common/lib -lalljoyn_services_common \
+		-lcurl
 
 .PHONY: clean mrproper
 
