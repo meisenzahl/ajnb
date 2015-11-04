@@ -63,7 +63,7 @@ class MyNotificationReceiver : public NotificationReceiver {
         qcc::String iconName = iconURL.substr(index);
         qcc::String filename = "/tmp/" + iconName;
 
-        printf("%s: %s %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str());
+        printf("%s: %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str());
 
         struct stat buffer;
         if (!stat(filename.c_str(), &buffer) == 0) {
