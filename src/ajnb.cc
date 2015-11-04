@@ -50,7 +50,11 @@ class MyNotificationReceiver : public NotificationReceiver {
     void Receive(Notification const& notification) {
         qcc::String deviceName = qcc::String(notification.getDeviceName());
         qcc::String content = qcc::String(notification.getText()[0].getText());
-        printf("%s: %s\n", deviceName.c_str(), content.c_str());
+        qcc::String iconURL = qcc::String(notification.getRichIconUrl());
+        size_t index = iconURL.find_last_of("/") + 1;
+        qcc::String iconName = iconURL.substr(index);
+
+        printf("%s: %s %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str(), iconName.c_str());
 
         notify_init("AllJoyn Notification Bridge");
         NotifyNotification* n = notify_notification_new(deviceName.c_str(), content.c_str(), NULL);
