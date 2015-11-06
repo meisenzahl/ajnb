@@ -66,7 +66,7 @@ class MyNotificationReceiver : public NotificationReceiver {
         printf("%s: %s %s\n", deviceName.c_str(), content.c_str(), iconURL.c_str());
 
         struct stat buffer;
-        if (!stat(filename.c_str(), &buffer) == 0) {
+        if (!(stat(filename.c_str(), &buffer) == 0)) {
             CURL *curl;
             FILE *fp;
             curl = curl_easy_init();
